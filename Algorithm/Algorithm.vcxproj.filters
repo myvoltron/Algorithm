@@ -15,28 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="1주차\1.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="1주차\2.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2주차\1.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2주차\2.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="3주차\1.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="3주차\2.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="4주차\1.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="4주차\2.c">
+    <ClCompile Include="과제1\과제1.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
