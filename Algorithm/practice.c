@@ -5,158 +5,245 @@
 typedef struct _node
 {
 	int key;
-	struct _node* next;
-} Node;
+	struct _node* left;
+	struct _node* right;
+} TreeNode;
 
-typedef struct _list
-{
-	Node* header;
-} List;
+TreeNode* makeTreeNode(int key);
+TreeNode* makeBST(int n);
+TreeNode* insertBST(TreeNode* root, int key);
+TreeNode* removeBST(TreeNode* root, int key);
+TreeNode* searchBST(TreeNode* root, int key);
+TreeNode* findMinBST(TreeNode* root);
+void printBST(TreeNode* root);
 
-void initList(List* list);
-void insertItem(List* list, int key);
-void insertLastItem(List* list, int key);
-int removeFirst(List* list);
-int seekFirst(List* list);
-void printList(List* list);
-int isEmpty(List* list);
-
-void mergeSort(List* list, int n);
-void partition(List* list, List* L1, List* L2, int n);
-void merge(List* list, List* L1, List* L2);
+int getHeightDiff(TreeNode* root);
+int getHeight(TreeNode* root);
+TreeNode* reBalance(TreeNode* root);
+TreeNode* rotateLL(TreeNode* root);
+TreeNode* rotateRR(TreeNode* root);
+TreeNode* rotateLR(TreeNode* root);
+TreeNode* rotateRL(TreeNode* root);
 
 int main(void)
 {
-	List list;
-	initList(&list);
-
 	int n;
 	scanf("%d", &n);
+	TreeNode* bstRoot = makeBST(n);
+	printBST(bstRoot);
+	printf("\n");
 
-	srand(time(NULL));
-	for (int i = 0; i < n; i++)
-		insertItem(&list, rand() % 100);
-	printList(&list);
-
-	mergeSort(&list, n);
-	printList(&list);
+	TreeNode* findKey = NULL;
+	int key; 
+	for (int i = 0; i < n / 2; i++)
+	{
+		scanf("%d", &key);
+		findKey = searchBST(bstRoot, key);
+		if (findKey == NULL)
+			printf("No result\n");
+		else
+			printf("result = %d\n", findKey->key);
+	}
+	for (int i = 0; i < n / 2; i++)
+	{
+		scanf("%d", &key);
+		bstRoot = removeBST(bstRoot, key);
+	}
+	printBST(bstRoot);
+	printf("\n");
 	return 0;
 }
 
-void initList(List* list)
+TreeNode* makeTreeNode(int key)
 {
-	list->header = NULL;
-}
-void insertItem(List* list, int key)
-{
-	Node* newNode = (Node*)malloc(sizeof(Node));
+	TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
 	newNode->key = key;
+	newNode->left = NULL;
+	newNode->right = NULL;
 
-	newNode->next = list->header;
-	list->header = newNode;
+	return newNode;
 }
-void insertLastItem(List* list, int key)
+TreeNode* makeBST(int n)
 {
-	Node* newNode = (Node*)malloc(sizeof(Node));
-	newNode->key = key;
-	newNode->next = NULL;
+	TreeNode* root = NULL;
+	int key;
+	for (int i = 0; i < n; i++)
+	{
+		key = rand() % 100 + 1;
+		root = insertBST(root, key);
+	}
 
-	Node* ptr = list->header;
-
-	if (ptr == NULL)
-		list->header = newNode;
+	return root;
+}
+TreeNode* insertBST(TreeNode* root, int key)
+{
+	if (root == NULL)
+		return makeTreeNode(key);
 	else
 	{
-		while (ptr->next != NULL)
-			ptr = ptr->next;
-		ptr->next = newNode;
-
-		/*while (1)
+		if (root->key == key)
 		{
-			if (ptr->next == NULL)
-				break;
-			ptr = ptr->next;
+			printf("Key duplicated\n");
+			return root;
 		}
-		ptr->next = newNode;*/
+		else if (root->key > key)
+			root->left = insertBST(root->left, key);
+		else
+			root->right = insertBST(root->right, key);
 	}
-}
-int removeFirst(List* list)
-{
-	int key = list->header->key;
-	Node* ptr = list->header;
-	list->header = list->header->next;
-	free(ptr);
-	return key;
-}
-int seekFirst(List* list)
-{
-	return list->header->key;
-}
-void printList(List* list)
-{
-	Node* ptr = list->header;
 
-	while (ptr != NULL)
+	root = reBalance(root);
+	return root;
+}
+TreeNode* removeBST(TreeNode* root, int key)
+{
+	if (root == NULL)
 	{
-		printf(" %d", ptr->key);
-		ptr = ptr->next;
+		printf("No Search result\n");
+		return root;
 	}
-	printf("\n");
-}
-int isEmpty(List* list)
-{
-	if (list->header == NULL)
-		return 1;
-	return 0;
-}
 
-void mergeSort(List* list, int n)
-{
-	List L1, L2;
-
-	if (n > 1)
+	if (root->key == key)
 	{
-		partition(list, &L1, &L2, n / 2);
-		
-		if (n % 2 == 0)
+		if (root->left != NULL && root->right != NULL)
 		{
-			mergeSort(&L1, n / 2);
-			mergeSort(&L2, n / 2);
+			TreeNode* temp = findMinBST(root->right);
+			root->key = temp->key;
+			root->right = removeBST(root->right, temp->key);
+		}
+		else if (root->left == NULL && root->right == NULL)
+		{
+			free(root);
+			return NULL;
 		}
 		else
 		{
-			mergeSort(&L1, n / 2);
-			mergeSort(&L2, n / 2 + 1);
+			TreeNode* temp = root->left;
+			if (temp == NULL)
+				temp = root->right;
+			free(root);
+			return temp;
 		}
-
-		merge(list, &L1, &L2);
 	}
-}
-void partition(List* list, List* L1, List* L2, int n)
-{
-	Node* ptr = list->header;
-	L1->header = ptr;
-	for (int i = 1; i < n; i++)
-		ptr = ptr->next;
-	L2->header = ptr->next;
-	ptr->next = NULL;
-}
-void merge(List* list, List* L1, List* L2)
-{
-	List newList;
-	initList(&newList);
+	else if (root->key > key)
+		root->left = removeBST(root->left, key);
+	else
+		root->right = removeBST(root->right, key);
 
-	while (!isEmpty(L1) && !isEmpty(L2))
+	root = reBalance(root);
+	return root;
+}
+TreeNode* searchBST(TreeNode* root, int key)
+{
+	if (root == NULL)
+		return NULL;
+
+	if (root->key == key)
+		return root;
+	else if (root->key > key)
+		return searchBST(root->left, key);
+	else
+		return searchBST(root->right, key);
+}
+TreeNode* findMinBST(TreeNode* root)
+{
+	TreeNode* ptr = root;
+	while (ptr->left != NULL)
+		ptr = ptr->left;
+	return ptr; 
+}
+void printBST(TreeNode* root)
+{
+	if (root == NULL)
+		return;
+
+	printBST(root->left);
+	printf(" %d", root->key);
+	printBST(root->right);
+}
+
+
+int getHeightDiff(TreeNode* root)
+{
+	int lSH, rSH;
+
+	if (root == NULL)
+		return 0;
+
+	lSH = getHeight(root->left);
+	rSH = getHeight(root->right);
+	return lSH - rSH;
+}
+int getHeight(TreeNode* root)
+{
+	int leftH, rightH;
+
+	if (root == NULL)
+		return 0;
+
+	leftH = getHeight(root->left);
+	rightH = getHeight(root->right);
+
+	if (leftH > rightH)
+		return leftH + 1;
+	else
+		return rightH + 1; 
+}
+TreeNode* reBalance(TreeNode* root)
+{
+	int heightDiff = getHeightDiff(root);
+
+	if (heightDiff > 1)
 	{
-		if (seekFirst(L1) <= seekFirst(L2))
-			insertLastItem(&newList, removeFirst(L1));
-		else 
-			insertLastItem(&newList, removeFirst(L2));
+		if (getHeightDiff(root->left) > 0)
+			root = rotateLL(root);
+		else
+			root = rotateLR(root);
 	}
-	while(!isEmpty(L1))
-		insertLastItem(&newList, removeFirst(L1));
-	while (!isEmpty(L2))
-		insertLastItem(&newList, removeFirst(L2));
 
-	list->header = newList.header;
+	if (heightDiff < -1)
+	{
+		if (getHeightDiff(root->right) < 0)
+			root = rotateRR(root);
+		else
+			root = rotateRL(root);
+	}
+
+	return root;
+}
+
+TreeNode* rotateLL(TreeNode* root)
+{
+	if (root == NULL)
+		return root;
+
+	TreeNode* temp = root->left;
+
+	root->left = temp->right;
+	temp->right = root;
+
+	return temp;
+}
+TreeNode* rotateRR(TreeNode* root)
+{
+	TreeNode* temp = root->right;
+
+	root->right = temp->left;
+	temp->left = root;
+
+	return temp;
+}
+TreeNode* rotateLR(TreeNode* root)
+{
+	TreeNode* temp = root->left;
+
+	root->left = rotateRR(root->left);
+	return rotateLL(root);
+}
+TreeNode* rotateRL(TreeNode* root)
+{
+	TreeNode* temp = root->right;
+
+	root->right = rotateLL(root->right);
+	return rotateRR(root);
 }

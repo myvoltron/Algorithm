@@ -151,8 +151,6 @@ void partition(List* plist, List* L1, List* L2, int n)
 }
 void merge(List* plist, List* L1, List* L2)
 {
-	Node* ptr1 = L1->head;
-	Node* ptr2 = L2->head;
 	List newList;
 	listInit(&newList);
 
