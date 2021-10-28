@@ -2,248 +2,350 @@
 #include <stdlib.h>
 #include <time.h>
 
-typedef struct _node
+#define SWAP(x, y, z) ((z) = (x), (x) = (y), (y) = (z))
+#define SIZE	100 
+
+typedef struct _treenode
 {
 	int key;
-	struct _node* left;
-	struct _node* right;
+	int height;
+	struct _treenode* parent;
+	struct _treenode* left;
+	struct _treenode* right;
 } TreeNode;
 
-TreeNode* makeTreeNode(int key);
-TreeNode* makeBST(int n);
-TreeNode* insertBST(TreeNode* root, int key);
-TreeNode* removeBST(TreeNode* root, int key);
-TreeNode* searchBST(TreeNode* root, int key);
-TreeNode* findMinBST(TreeNode* root);
-void printBST(TreeNode* root);
+TreeNode* root;
 
-int getHeightDiff(TreeNode* root);
-int getHeight(TreeNode* root);
-TreeNode* reBalance(TreeNode* root);
-TreeNode* rotateLL(TreeNode* root);
-TreeNode* rotateRR(TreeNode* root);
-TreeNode* rotateLR(TreeNode* root);
-TreeNode* rotateRL(TreeNode* root);
-
-int main(void)
-{
-	int n;
-	scanf("%d", &n);
-	TreeNode* bstRoot = makeBST(n);
-	printBST(bstRoot);
-	printf("\n");
-
-	TreeNode* findKey = NULL;
-	int key; 
-	for (int i = 0; i < n / 2; i++)
-	{
-		scanf("%d", &key);
-		findKey = searchBST(bstRoot, key);
-		if (findKey == NULL)
-			printf("No result\n");
-		else
-			printf("result = %d\n", findKey->key);
-	}
-	for (int i = 0; i < n / 2; i++)
-	{
-		scanf("%d", &key);
-		bstRoot = removeBST(bstRoot, key);
-	}
-	printBST(bstRoot);
-	printf("\n");
-	return 0;
-}
-
-TreeNode* makeTreeNode(int key)
+TreeNode* getNode()
 {
 	TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
-	newNode->key = key;
+	newNode->parent = NULL;
 	newNode->left = NULL;
 	newNode->right = NULL;
 
 	return newNode;
 }
-TreeNode* makeBST(int n)
-{
-	TreeNode* root = NULL;
-	int key;
-	for (int i = 0; i < n; i++)
-	{
-		key = rand() % 100 + 1;
-		root = insertBST(root, key);
-	}
 
-	return root;
-}
-TreeNode* insertBST(TreeNode* root, int key)
+int isExternal(TreeNode* w)
 {
-	if (root == NULL)
-		return makeTreeNode(key);
+	if (w->left == NULL && w->right == NULL)
+		return 1;
+	else
+		return 0;
+}
+int isInternal(TreeNode* w)
+{
+	if (w->left != NULL || w->right != NULL)
+		return 1;
+	else
+		return 0;
+}
+TreeNode* sibling(TreeNode* w)
+{
+	if (w->parent == NULL)
+		exit(1);
+	if (w->parent->left == w)
+		return w->parent->right;
+	else
+		return w->parent->left;
+}
+void expandExternal(TreeNode* w)
+{
+	TreeNode* left, *right;
+	left = getNode();
+	right = getNode();
+
+	left->height = 0;
+	right->height = 0;
+	left->parent = w;
+	right->parent = w;
+
+	w->left = left;
+	w->right = right;
+	w->height = 1;
+}
+TreeNode* reduceExternal(TreeNode* z)
+{
+	TreeNode* w, * zs, * g;
+	w = z->parent;
+	zs = sibling(z);
+	if (w->parent == NULL)
+	{
+		root = zs;
+		zs->parent = NULL;
+	}
 	else
 	{
-		if (root->key == key)
-		{
-			printf("Key duplicated\n");
-			return root;
-		}
-		else if (root->key > key)
-			root->left = insertBST(root->left, key);
+		g = w->parent;
+		zs->parent = g;
+		if (g->left == w)
+			g->left = zs;
 		else
-			root->right = insertBST(root->right, key);
+			g->right = zs;
 	}
 
-	root = reBalance(root);
-	return root;
+	free(z);
+	free(w);
+	return zs; 
+	
 }
-TreeNode* removeBST(TreeNode* root, int key)
+TreeNode* inOrderSucc(TreeNode* w)
 {
-	if (root == NULL)
+	w = w->right;
+	while (isInternal(w->left))
+		w = w->left;
+	return w;
+}
+
+TreeNode* treeSearch(TreeNode* w, int key);
+int findElement(int key);
+void insertItem(int key);
+int removeElement(int key);
+void preOrderPrint(TreeNode* root);
+
+void searchAndFixAfterInsertion(TreeNode* w);
+int updateHeight(TreeNode* w);
+int isBalanced(TreeNode* w);
+TreeNode* restructure(TreeNode* x, TreeNode* y, TreeNode* z);
+
+int main(void)
+{
+	char opCode;
+	int loop = 1, key, val; 
+
+	root = getNode();
+
+	while (loop)
 	{
-		printf("No Search result\n");
-		return root;
-	}
+		scanf("%c", &opCode);
+		getchar();
 
-	if (root->key == key)
+		switch (opCode)
+		{
+		case 'i':
+			scanf("%d", &key);
+			getchar();
+			insertItem(key);
+			break;
+		case 'd':
+			scanf("%d", &key);
+			getchar();
+			val = removeElement(key);
+			if (val == -1)
+				printf("X\n");
+			else
+				printf("%d\n", val);
+			break;
+		case 's':
+			scanf("%d", &key);
+			getchar();
+			val = findElement(key);
+			if (val == -1)
+				printf("X\n");
+			else
+				printf("%d\n", val);
+			break;
+		case 'p':
+			preOrderPrint(root);
+			printf("\n");
+			break;
+		case 'q':
+			loop = 0;
+			break;
+		}
+	}
+	return 0;
+}
+
+TreeNode* treeSearch(TreeNode* w, int key)
+{
+	if (isExternal(w))
+		return w;
+
+	if (w->key == key)
+		return w;
+	else if (w->key > key)
+		return treeSearch(w->left, key);
+	else
+		return treeSearch(w->right, key);
+}
+int findElement(int key)
+{
+	TreeNode* w = treeSearch(root, key);
+	if (isExternal(w))
+		return -1;
+	else
+		return w->key;
+}
+void insertItem(int key)
+{
+	TreeNode* w = treeSearch(root, key);
+
+	if (isInternal(w))
+		return;
+	else
 	{
-		if (root->left != NULL && root->right != NULL)
-		{
-			TreeNode* temp = findMinBST(root->right);
-			root->key = temp->key;
-			root->right = removeBST(root->right, temp->key);
-		}
-		else if (root->left == NULL && root->right == NULL)
-		{
-			free(root);
-			return NULL;
-		}
-		else
-		{
-			TreeNode* temp = root->left;
-			if (temp == NULL)
-				temp = root->right;
-			free(root);
-			return temp;
-		}
+		w->key = key;
+		expandExternal(w);
+		searchAndFixAfterInsertion(w);
 	}
-	else if (root->key > key)
-		root->left = removeBST(root->left, key);
-	else
-		root->right = removeBST(root->right, key);
+}
+int removeElement(int key)
+{
+	TreeNode* z, * y, * zs, * w;
+	int keyVal;
 
-	root = reBalance(root);
-	return root;
-}
-TreeNode* searchBST(TreeNode* root, int key)
-{
-	if (root == NULL)
-		return NULL;
+	w = treeSearch(root, key);
+	if (isExternal(w))
+		return -1;
 
-	if (root->key == key)
-		return root;
-	else if (root->key > key)
-		return searchBST(root->left, key);
+	z = w->left;
+	keyVal = w->key;
+	if (!isExternal(z))
+		z = w->right;
+	if (isExternal(z))
+		zs = reduceExternal(z);
 	else
-		return searchBST(root->right, key);
+	{
+		y = inOrderSucc(w); // 오른쪽에서 제일 왼쪽 
+		z = y->left;
+		w->key = y->key;
+		zs = reduceExternal(z);
+	}
+
+	return keyVal;
 }
-TreeNode* findMinBST(TreeNode* root)
+void preOrderPrint(TreeNode* root)
 {
-	TreeNode* ptr = root;
-	while (ptr->left != NULL)
-		ptr = ptr->left;
-	return ptr; 
-}
-void printBST(TreeNode* root)
-{
-	if (root == NULL)
+	if (isExternal(root))
 		return;
 
-	printBST(root->left);
 	printf(" %d", root->key);
-	printBST(root->right);
+	preOrderPrint(root->left);
+	preOrderPrint(root->right);
 }
 
-
-int getHeightDiff(TreeNode* root)
+void searchAndFixAfterInsertion(TreeNode* w)
 {
-	int lSH, rSH;
+	TreeNode* x, * y, * z;
+	if (w->parent == NULL)
+		return;
 
-	if (root == NULL)
-		return 0;
+	z = w->parent;
+	while (updateHeight(z) && isBalanced(z))
+	{
+		if (z->parent == NULL)
+			return;
+		z = z->parent;
+	}
+	if (isBalanced(z))
+		return;
 
-	lSH = getHeight(root->left);
-	rSH = getHeight(root->right);
-	return lSH - rSH;
-}
-int getHeight(TreeNode* root)
-{
-	int leftH, rightH;
-
-	if (root == NULL)
-		return 0;
-
-	leftH = getHeight(root->left);
-	rightH = getHeight(root->right);
-
-	if (leftH > rightH)
-		return leftH + 1;
+	if (z->left->height > z->right->height)
+		y = z->left;
 	else
-		return rightH + 1; 
-}
-TreeNode* reBalance(TreeNode* root)
-{
-	int heightDiff = getHeightDiff(root);
+		y = z->right;
 
-	if (heightDiff > 1)
+	if (y->left->height > y->right->height)
+		x = y->left;
+	else
+		x = y->right;
+
+	restructure(x, y, z);
+}
+int updateHeight(TreeNode* w)
+{
+	int left, right, h;
+	left = w->left->height, right = w->right->height;
+
+	if (left > right)
+		h = left + 1;
+	else
+		h = right + 1;
+
+	if (w->height != h)
 	{
-		if (getHeightDiff(root->left) > 0)
-			root = rotateLL(root);
-		else
-			root = rotateLR(root);
+		w->height = h;
+		return 1;
+	}
+	else
+		return 0;
+}
+int isBalanced(TreeNode* w)
+{
+	int left, right, diff;
+	left = w->left->height;
+	right = w->right->height;
+
+	if (left >= right)
+		diff = left - right;
+	else
+		diff = right - left;
+
+	if (diff < 2)
+		return 1;
+	else
+		return 0;
+}
+TreeNode* restructure(TreeNode* x, TreeNode* y, TreeNode* z)
+{
+	TreeNode* a, * b, * c, * t0, * t1, * t2, * t3;
+
+	if (z->key > y->key && y->key > x->key)
+	{
+		a = x, b = y, c = z;
+		t0 = a->left, t1 = a->right, t2 = b->right, t3 = c->right;
+	}
+	else if (z->key > y->key && y->key < x->key)
+	{
+		a = y, b = x, c = z; 
+		t0 = a->left, t1 = b->left, t2 = b->right, t3 = c->right;
+	}
+	else if (z->key < y->key && y->key < x->key)
+	{
+		a = z, b = y, c = x;
+		t0 = a->left, t1 = b->left, t2 = c->left, t3 = c->right;
+	}
+	else
+	{
+		a = z, b = x, c = y;
+		t0 = a->left, t1 = b->left, t2 = b->right, t3 = c->right;
 	}
 
-	if (heightDiff < -1)
+	// root setting 
+	if (z->parent == NULL)
 	{
-		if (getHeightDiff(root->right) < 0)
-			root = rotateRR(root);
-		else
-			root = rotateRL(root);
+		root = b;
+		b->parent = NULL;
+	}
+	else if (z->parent->left == z)
+	{
+		z->parent->left = b;
+		b->parent = z->parent;
+	}
+	else
+	{
+		z->parent->right = b;
+		b->parent = z->parent;
 	}
 
-	return root;
-}
+	t0->parent = a;
+	t1->parent = a;
+	a->left = t0;
+	a->right = t1;
+	updateHeight(a);
 
-TreeNode* rotateLL(TreeNode* root)
-{
-	if (root == NULL)
-		return root;
+	t2->parent = c;
+	t3->parent = c;
+	c->left = t2;
+	c->right = t3;
+	updateHeight(c);
 
-	TreeNode* temp = root->left;
+	a->parent = b;
+	c->parent = b;
+	b->left = a;
+	b->right = c;
+	updateHeight(b);
 
-	root->left = temp->right;
-	temp->right = root;
-
-	return temp;
-}
-TreeNode* rotateRR(TreeNode* root)
-{
-	TreeNode* temp = root->right;
-
-	root->right = temp->left;
-	temp->left = root;
-
-	return temp;
-}
-TreeNode* rotateLR(TreeNode* root)
-{
-	TreeNode* temp = root->left;
-
-	root->left = rotateRR(root->left);
-	return rotateLL(root);
-}
-TreeNode* rotateRL(TreeNode* root)
-{
-	TreeNode* temp = root->right;
-
-	root->right = rotateLL(root->right);
-	return rotateRR(root);
+	return b;
 }
