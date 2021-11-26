@@ -20,8 +20,8 @@ typedef struct vertex
 	char vName;
 	int indegree; // 진입차수 
 
-	IncidentEdge *outEdges;
-	IncidentEdge *inEdges; 
+	IncidentEdge* outEdges;
+	IncidentEdge* inEdges;
 } Vertex;
 
 typedef struct edge
@@ -32,8 +32,8 @@ typedef struct edge
 
 typedef struct graph
 {
-	Vertex *vertexArray;
-	Edge *edgeArray;
+	Vertex* vertexArray;
+	Edge* edgeArray;
 } Graph;
 
 void initQueue(Queue* Q)
@@ -42,7 +42,7 @@ void initQueue(Queue* Q)
 }
 int isEmpty(Queue* Q)
 {
-	return Q->r == Q->f; 
+	return Q->r == Q->f;
 }
 int isFull(Queue* Q)
 {
@@ -57,7 +57,7 @@ void enqueue(Queue* Q, int vIdx)
 	}
 
 	Q->r = (Q->r + 1) % SIZE;
-	Q->elem[Q->r] = vIdx; 
+	Q->elem[Q->r] = vIdx;
 }
 int dequeue(Queue* Q)
 {
@@ -81,7 +81,7 @@ void addFirst(IncidentEdge* header, int idx);
 
 void topologicalSort(Graph* G, int* topOrder);
 
-int n, m; 
+int n, m;
 
 int main(void)
 {
@@ -103,8 +103,8 @@ int main(void)
 }
 
 /*
-n, m을 전역변수를 안써도 구조체를 이용해서 충분히 구현할 수 있기는 하다. 
-하지만 문제 상에서 전역변수 써도 된다고 나와있으니 일단 미뤄둔다. 
+n, m을 전역변수를 안써도 구조체를 이용해서 충분히 구현할 수 있기는 하다.
+하지만 문제 상에서 전역변수 써도 된다고 나와있으니 일단 미뤄둔다.
 */
 
 //void printGraph(Graph* G)
@@ -169,9 +169,9 @@ void insertDirectedEdge(Graph* G, char origin, char destination, int idx)
 
 	addFirst(G->vertexArray[originIdx].outEdges, idx); // 인접간선
 	addFirst(G->vertexArray[destinationIdx].inEdges, idx);
-	G->vertexArray[destinationIdx].indegree++; 
+	G->vertexArray[destinationIdx].indegree++;
 }
-int findIdx(Graph* G, char vName) 
+int findIdx(Graph* G, char vName)
 {
 	for (int i = 0; i < n; i++)
 	{
@@ -186,16 +186,16 @@ void addFirst(IncidentEdge* header, int idx)
 	IncidentEdge* newNode = (IncidentEdge*)malloc(sizeof(IncidentEdge));
 	newNode->edgeIdx = idx;
 	newNode->next = header->next;
-	header->next = newNode; 
+	header->next = newNode;
 }
 
-void topologicalSort(Graph* G, int *topOrder)
+void topologicalSort(Graph* G, int* topOrder)
 {
 	Queue Q;
 	IncidentEdge* ptr;
 	int t, u, w;
 	int* in = (int*)malloc(sizeof(int) * n); // 각 idx는 vertex에 대한 Idx를 의미하고, 그에 따른 값은 진입차수를 의미한다. 
-	
+
 	initQueue(&Q);
 
 	for (int i = 0; i < n; i++)
