@@ -109,13 +109,47 @@ void kruskalMST(Graph* G, Edge* edgeList[], int v[], int *sum)
     printf("\n");
 }
 
+/*
+우선순위 큐를 사용하지 않고 Edge의 배열과 분리집합을 이용해서 문제를 풀었다. 
+https://gmlwjd9405.github.io/2018/08/31/algorithm-union-find.html 분리집합 참고 
+
+입력케이스는 다음과 같다.
+5 7
+1 2 1
+1 4 2
+1 5 4
+2 5 7
+4 5 3
+3 5 5
+2 3 6
+
+6 9
+1 2 3
+1 3 20
+2 4 25
+2 5 17
+3 4 34
+3 5 1
+3 6 12
+4 5 5
+5 6 37
+
+5 7
+1 2 75
+1 4 95
+1 3 51
+2 4 9
+4 3 19
+4 5 42
+3 5 31
+*/
+
 int main()
 {
     int n, m;
     int v1, v2, weight;
     int sum;
     int root[101]; // 분리집합을 이용해서 정점들이 연결된거를 확인한다. 
-    // https://gmlwjd9405.github.io/2018/08/31/algorithm-union-find.html 참고 
     Edge* edgeList[1000];
 
     Graph G;

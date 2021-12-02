@@ -98,6 +98,40 @@ void primMST(Graph* G, int startV, int d[], int* sum)
     printf("\n");
 }
 
+/*
+우선순위 큐를 사용하지 않는 prim 알고리즘이다.
+https://lsoovmee-rhino.tistory.com/93?category=847612 참고
+
+입력케이스는 다음과 같다. 
+5 7
+1 2 1
+1 4 2
+1 5 4
+2 5 7
+4 5 3
+3 5 5
+2 3 6
+
+6 9
+1 2 3
+1 3 20
+2 4 25
+2 5 17
+3 4 34
+3 5 1
+3 6 12
+4 5 5
+5 6 37
+
+5 7
+1 2 75
+1 4 95
+1 3 51
+2 4 9
+4 3 19
+4 5 42
+3 5 31
+*/
 int main()
 {
     int n, m;
